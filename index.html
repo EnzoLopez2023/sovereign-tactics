@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Tactics - Complete Edition</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        /* Enhanced styles for the full game */
+        #menu-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+        }
+        
+        .menu-content {
+            text-align: center;
+            background: rgba(44, 62, 80, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+        }
+        
+        .menu-content h1 {
+            color: #3498db;
+            margin-bottom: 30px;
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .menu-btn {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .menu-btn:hover {
+            background: linear-gradient(145deg, #2980b9, #1f5f8b);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .menu-btn:active {
+            transform: translateY(0px);
+        }
+        
+        #game-container {
+            display: none;
+            height: 100vh;
+            background: #1a1a1a;
+        }
+        
+        #game-header {
+            background: #2c3e50;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        #game-header h1 {
+            color: #3498db;
+            margin: 0;
+            font-size: 1.8em;
+        }
+        
+        #header-controls {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .game-controls-compact {
+            display: flex;
+            gap: 8px;
+            background: rgba(52, 73, 94, 0.8); /* Debug background to make it visible */
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid #3498db; /* Debug border */
+        }
+        
+        .header-btn {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 1px solid white; /* Debug border to make buttons more visible */
+        }
+        
+        .header-btn:hover {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+        
+        #game-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            color: white;
+        }
+        
+        /* Flashing End Turn Button */
+        #end-turn-btn.flash {
+            animation: flashEndTurn 1s ease-in-out infinite;
+        }
+        
+        @keyframes flashEndTurn {
+            0%, 100% {
+                background: linear-gradient(145deg, #3498db, #2980b9);
+                box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            }
+            50% {
+                background: linear-gradient(145deg, #f39c12, #e67e22);
+                box-shadow: 0 4px 15px rgba(243, 156, 18, 0.6);
+                transform: scale(1.05);
+            }
+        }
+        
+        /* Player Statistics Styling */
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-line:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #bdc3c7;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .stat-line span:last-child {
+            color: #3498db;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        #game-main {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        
+        #game-board-container {
+            flex: 1;
+            position: relative;
+            background: #34495e;
+        }
+        
+        #game-canvas {
+            border: 2px solid #3498db;
+            background: #2c3e50;
+            cursor: crosshair;
+        }
+        
+        #game-sidebar {
+            width: 300px;
+            background: #2c3e50;
+            padding: 20px;
+            border-left: 3px solid #3498db;
+            overflow-y: auto;
+        }
+        
+        .info-panel {
+            background: #34495e;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #3498db;
+        }
+        
+        .info-panel h3 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #34495e;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <p style="color: white; font-size: 18px;">Loading Sovereign Tactics...</p>
+        <p id="loading-status" style="color: #3498db;">Initializing game engine...</p>
+    </div>
+
+    <!-- Menu Container -->
+    <div id="menu-container" style="display: none;">
+        <div class="menu-content">
+            <h1>Sovereign Tactics</h1>
+            <div class="menu-options">
+                <button id="start-basic-game" class="menu-btn">Quick Demo (Small Map)</button>
+                <button id="start-standard-game" class="menu-btn">Standard Demo (Medium Map)</button>
+                <button id="start-advanced-game" class="menu-btn">Advanced Demo (Large Map)</button>
+                <button id="load-saved-game" class="menu-btn">Load Saved Game</button>
+                <button id="show-settings" class="menu-btn">Game Settings</button>
+                <button id="show-help" class="menu-btn">How to Play</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container">
+        <header id="game-header">
+            <h1>Sovereign Tactics</h1>
+            <div id="header-controls">
+                <div class="game-controls-compact">
+                    <button id="save-game" class="header-btn">Save</button>
+                    <button id="load-game" class="header-btn">Load</button>
+                    <button id="return-to-menu" class="header-btn">Menu</button>
+                </div>
+                <div id="game-info">
+                    <span id="current-player">Player 1</span>
+                    <span id="turn-counter">Turn 1</span>
+                    <button id="end-turn-btn" class="menu-btn">End Turn</button>
+                </div>
+            </div>
+        </header>
+        
+        <main id="game-main">
+            <div id="game-board-container">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+            </div>
+            
+            <aside id="game-sidebar">
+                <div class="info-panel">
+                    <h3>Selected Unit</h3>
+                    <div id="selected-unit-details">
+                        <p>No unit selected</p>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Selected City</h3>
+                    <div id="selected-city-details">
+                        <p>No city selected</p>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Player Statistics</h3>
+                    <div id="player-stats">
+                        <div class="stat-line">
+                            <span class="stat-label">Cities:</span>
+                            <span id="stat-cities">0</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Units:</span>
+                            <span id="stat-units">0</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Battles Won:</span>
+                            <span id="stat-battles-won">0</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Battles Lost:</span>
+                            <span id="stat-battles-lost">0</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Available Moves:</span>
+                            <span id="stat-available-moves">0</span>
+                        </div>
+                        <div class="stat-line">
+                            <span class="stat-label">Units Created:</span>
+                            <span id="stat-units-created">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 style="color: #3498db; margin-bottom: 20px;">Game Settings</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    Map Size: 
+                    <select id="map-size" style="padding: 5px; border-radius: 5px; border: none; background: #34495e; color: white;">
+                        <option value="small">Small (20x15)</option>
+                        <option value="medium" selected>Medium (30x20)</option>
+                        <option value="large">Large (40x30)</option>
+                    </select>
+                </label>
+                
+                <label style="display: flex; justify-content: space-between; align-items: center; color: white;">
+                    AI Difficulty: 
+                    <select id="ai-difficulty" style="padding: 5px; border-radius: 5px; border: none; background: #34495e; color: white;">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </label>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="close-settings" class="menu-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2 style="color: #3498db; margin-bottom: 20px;">How to Play Sovereign Tactics</h2>
+            <div style="color: white; line-height: 1.6;">
+                <h3 style="color: #3498db;">Objective</h3>
+                <p>Capture all enemy cities and eliminate opposing armies to achieve victory!</p>
+                
+                <h3 style="color: #3498db;">Controls</h3>
+                <ul>
+                    <li><strong>Left Click:</strong> Select units or cities</li>
+                    <li><strong>Right Click:</strong> Move selected unit or attack enemy</li>
+                    <li><strong>Mouse Wheel:</strong> Zoom in and out</li>
+                    <li><strong>Click + Drag:</strong> Pan around the map</li>
+                </ul>
+                
+                <h3 style="color: #3498db;">Unit Types</h3>
+                <ul>
+                    <li><strong>Infantry:</strong> Basic ground unit, captures cities</li>
+                    <li><strong>Tank:</strong> Heavy armor, powerful ground combat</li>
+                    <li><strong>Fighter:</strong> Fast air unit, great for reconnaissance</li>
+                    <li><strong>Ship:</strong> Naval unit for water-based combat</li>
+                </ul>
+                
+                <h3 style="color: #3498db;">Strategy Tips</h3>
+                <ul>
+                    <li>Capture cities to produce more units</li>
+                    <li>Use terrain to your advantage in combat</li>
+                    <li>Balance offense and defense</li>
+                    <li>Scout with fast units before attacking</li>
+                </ul>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button id="close-help" class="menu-btn">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Script -->
+    <script type="module">
+        console.log('🎮 Sovereign Tactics - Complete Edition Loading...');
+        
+        // Global app state
+        let gameEngine = null;
+        let gameBoard = null;
+        let gameHUD = null;
+        let currentGame = null;
+        
+        // Update loading status
+        function updateLoadingStatus(message) {
+            const statusElement = document.getElementById('loading-status');
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
+            console.log('📦', message);
+        }
+        
+        // Initialize the full application
+        async function initializeApp() {
+            try {
+                updateLoadingStatus('Loading game modules...');
+                
+                // Import all game modules
+                const { GAME_CONSTANTS } = await import('./src/utils/Constants.js');
+                const { GameHelpers, EventEmitter } = await import('./src/utils/Helpers.js');
+                const { Game } = await import('./src/game/Game.js');
+                const { GameBoard } = await import('./src/ui/GameBoard.js');
+                const { HUD } = await import('./src/ui/HUD.js');
+                
+                updateLoadingStatus('Initializing game engine...');
+                
+                // Store references
+                window.GameEngine = { Game, GameBoard, HUD, GAME_CONSTANTS, GameHelpers, EventEmitter };
+                
+                updateLoadingStatus('Setting up user interface...');
+                
+                // Setup UI event handlers
+                setupMenuHandlers();
+                setupGameControls();
+                
+                updateLoadingStatus('Ready to play!');
+                
+                // Hide loading screen and show menu
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('menu-container').style.display = 'flex';
+                    console.log('🎉 Sovereign Tactics fully loaded and ready to play!');
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize app:', error);
+                updateLoadingStatus(`Error: ${error.message}`);
+                
+                // Fallback: hide loading and show basic menu
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('menu-container').style.display = 'flex';
+                    alert('Game loaded in basic mode. Some features may not work properly.');
+                }, 2000);
+            }
+        }
+        
+        // Setup menu button handlers
+        function setupMenuHandlers() {
+            // Quick Game
+            const quickBtn = document.getElementById('start-basic-game');
+            if (quickBtn) {
+                quickBtn.addEventListener('click', () => startNewGame('quick'));
+            }
+            
+            // Standard Game
+            const standardBtn = document.getElementById('start-standard-game');
+            if (standardBtn) {
+                standardBtn.addEventListener('click', () => startNewGame('standard'));
+            }
+            
+            // Advanced Game
+            const advancedBtn = document.getElementById('start-advanced-game');
+            if (advancedBtn) {
+                advancedBtn.addEventListener('click', () => startNewGame('advanced'));
+            }
+            
+            // Settings
+            const settingsBtn = document.getElementById('show-settings');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', showSettings);
+            }
+            
+            // Help
+            const helpBtn = document.getElementById('show-help');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', showHelp);
+            }
+            
+            // Modal close buttons
+            const closeSettings = document.getElementById('close-settings');
+            if (closeSettings) {
+                closeSettings.addEventListener('click', () => {
+                    document.getElementById('settings-modal').style.display = 'none';
+                });
+            }
+            
+            const closeHelp = document.getElementById('close-help');
+            if (closeHelp) {
+                closeHelp.addEventListener('click', () => {
+                    document.getElementById('help-modal').style.display = 'none';
+                });
+            }
+        }
+        
+        // Setup game control handlers
+        function setupGameControls() {
+            const endTurnBtn = document.getElementById('end-turn-btn');
+            if (endTurnBtn) {
+                endTurnBtn.addEventListener('click', endTurn);
+            }
+            
+            const returnBtn = document.getElementById('return-to-menu');
+            if (returnBtn) {
+                returnBtn.addEventListener('click', returnToMenu);
+            }
+            
+            const saveBtn = document.getElementById('save-game');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', saveGame);
+            }
+            
+            const loadBtn = document.getElementById('load-game');
+            if (loadBtn) {
+                loadBtn.addEventListener('click', loadGame);
+            }
+        }
+        
+        // Start a new game
+        async function startNewGame(gameType) {
+            console.log(`🎲 Starting ${gameType} game...`);
+            
+            try {
+                const { Game, GameBoard, HUD, GAME_CONSTANTS } = window.GameEngine;
+                
+                // Configure game based on type
+                let config = {};
+                switch (gameType) {
+                    case 'quick':
+                        config = { mapWidth: 20, mapHeight: 15, numPlayers: 2, difficulty: 'easy' };
+                        break;
+                    case 'standard':
+                        config = { mapWidth: 25, mapHeight: 20, numPlayers: 2, difficulty: 'medium' };
+                        break;
+                    case 'advanced':
+                        config = { mapWidth: 30, mapHeight: 25, numPlayers: 2, difficulty: 'hard' };
+                        break;
+                }
+                
+                // Create game instance
+                currentGame = new Game();
+                currentGame.initializeGame(config);
+                
+                // Setup UI
+                const canvas = document.getElementById('game-canvas');
+                gameBoard = new GameBoard(canvas, currentGame);
+                gameHUD = new HUD(currentGame);
+                
+                // Initial stats update
+                const initialPlayer = currentGame.getCurrentPlayer();
+                if (initialPlayer && gameHUD && typeof gameHUD.updatePlayerStats === 'function') {
+                    gameHUD.updatePlayerStats(initialPlayer);
+                }
+                
+                // Listen for game state changes
+                currentGame.on('playerTurnStarted', updateGameDisplay);
+                currentGame.on('gameStarted', updateGameDisplay);
+                currentGame.on('unitMoved', updateGameDisplay);
+                currentGame.on('unitSelected', updateGameDisplay);
+                currentGame.on('unitDeselected', updateGameDisplay);
+                
+                // Show game interface
+                document.getElementById('menu-container').style.display = 'none';
+                document.getElementById('game-container').style.display = 'block';
+                
+                // Update initial display
+                console.log('🎮 Initial game state:', {
+                    currentPlayer: currentGame.getCurrentPlayer(),
+                    turnNumber: currentGame.turnNumber,
+                    hasPlayerHasActions: typeof currentGame.playerHasActions === 'function'
+                });
+                updateGameDisplay();
+                
+                // Start periodic update for End Turn button state and statistics
+                setInterval(() => {
+                    if (currentGame && document.getElementById('game-container').style.display !== 'none') {
+                        updateGameDisplay();
+                        // Also update player stats periodically
+                        const currentPlayer = currentGame.getCurrentPlayer();
+                        if (currentPlayer && gameHUD && typeof gameHUD.updatePlayerStats === 'function') {
+                            gameHUD.updatePlayerStats(currentPlayer);
+                        }
+                    }
+                }, 2000); // Check every 2 seconds to reduce load
+                
+                // Ensure canvas is properly sized and rendered
+                setTimeout(() => {
+                    if (gameBoard) {
+                        gameBoard.resize();
+                        gameBoard.render();
+                    }
+                }, 100);
+                
+                console.log('✅ Game started successfully!');
+                
+            } catch (error) {
+                console.error('❌ Failed to start game:', error);
+                alert(`Failed to start game: ${error.message}`);
+            }
+        }
+        
+        // End current player's turn
+        function endTurn() {
+            if (currentGame) {
+                console.log('⏭️ Ending turn...');
+                currentGame.endTurn();
+            }
+        }
+        
+        // Return to main menu
+        function returnToMenu() {
+            console.log('🏠 Returning to menu...');
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('menu-container').style.display = 'flex';
+            
+            // Clean up game resources
+            currentGame = null;
+            gameBoard = null;
+            gameHUD = null;
+        }
+        
+        // Show settings modal
+        function showSettings() {
+            document.getElementById('settings-modal').style.display = 'block';
+        }
+        
+        // Show help modal
+        function showHelp() {
+            document.getElementById('help-modal').style.display = 'block';
+        }
+        
+        // Save game
+        function saveGame() {
+            if (currentGame) {
+                try {
+                    const saveData = currentGame.saveGame();
+                    localStorage.setItem('empireSave', JSON.stringify(saveData));
+                    alert('Game saved successfully!');
+                } catch (error) {
+                    alert(`Failed to save game: ${error.message}`);
+                }
+            }
+        }
+        
+        // Load game
+        function loadGame() {
+            try {
+                const saveData = localStorage.getItem('empireSave');
+                if (!saveData) {
+                    alert('No saved game found!');
+                    return;
+                }
+                
+                // Implementation would go here
+                alert('Load game functionality coming soon!');
+            } catch (error) {
+                alert(`Failed to load game: ${error.message}`);
+            }
+        }
+        
+        // Update game display elements
+        function updateGameDisplay() {
+            try {
+                if (!currentGame) return;
+                
+                const currentPlayer = currentGame.getCurrentPlayer();
+                if (currentPlayer && currentPlayer.name) {
+                    const playerElement = document.getElementById('current-player');
+                    if (playerElement) {
+                        playerElement.textContent = currentPlayer.name;
+                        playerElement.style.color = currentPlayer.color || '#3498db';
+                    }
+                }
+                
+                const turnElement = document.getElementById('turn-counter');
+                if (turnElement) {
+                    turnElement.textContent = `Turn ${currentGame.turnNumber || 1}`;
+                }
+                
+                // Check if player has available actions and flash End Turn button accordingly
+                const endTurnBtn = document.getElementById('end-turn-btn');
+                if (endTurnBtn && typeof currentGame.playerHasActions === 'function' && currentPlayer && currentPlayer.id !== undefined) {
+                    try {
+                        const hasActions = currentGame.playerHasActions(currentPlayer.id);
+                        if (!hasActions) {
+                            // Player has no moves left, flash the button
+                            endTurnBtn.classList.add('flash');
+                        } else {
+                            // Player still has moves, remove flash
+                            endTurnBtn.classList.remove('flash');
+                        }
+                    } catch (actionError) {
+                        console.warn('Error checking player actions:', actionError);
+                        endTurnBtn.classList.remove('flash');
+                    }
+                } else {
+                    // Silently handle missing requirements - don't flood console
+                    if (endTurnBtn) {
+                        endTurnBtn.classList.remove('flash');
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating game display:', error);
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializeApp);
+        
+        // Make app available globally for debugging
+        window.EmpireDeluxeApp = {
+            get currentGame() { return currentGame; },
+            get gameBoard() { return gameBoard; },
+            get gameHUD() { return gameHUD; },
+            startNewGame,
+            returnToMenu
+        };
+    </script>
+</body>
+</html>

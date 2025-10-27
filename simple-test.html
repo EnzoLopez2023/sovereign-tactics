@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Tactics - Simple Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .menu-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .menu-btn:hover {
+            background: #2980b9;
+        }
+        
+        #game-area {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        canvas {
+            border: 2px solid #3498db;
+            background: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div id="menu-area">
+        <h1>Sovereign Tactics</h1>
+        <p>Select a game mode to begin:</p>
+        <button id="quick-game" class="menu-btn">Quick Game</button>
+        <button id="standard-game" class="menu-btn">Standard Game</button>
+        <button id="advanced-game" class="menu-btn">Advanced Game</button>
+    </div>
+    
+    <div id="game-area">
+        <h2>Game Started!</h2>
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div>
+            <button id="back-to-menu" class="menu-btn">Back to Menu</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('Simple test loading...');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded');
+            
+            // Get elements
+            const menuArea = document.getElementById('menu-area');
+            const gameArea = document.getElementById('game-area');
+            const quickBtn = document.getElementById('quick-game');
+            const standardBtn = document.getElementById('standard-game');
+            const advancedBtn = document.getElementById('advanced-game');
+            const backBtn = document.getElementById('back-to-menu');
+            const canvas = document.getElementById('game-canvas');
+            
+            console.log('Elements:', {
+                menuArea: !!menuArea,
+                gameArea: !!gameArea,
+                quickBtn: !!quickBtn,
+                standardBtn: !!standardBtn,
+                advancedBtn: !!advancedBtn
+            });
+            
+            // Game start function
+            function startGame(type) {
+                console.log('Starting game:', type);
+                menuArea.style.display = 'none';
+                gameArea.style.display = 'block';
+                
+                // Simple canvas test
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#27ae60';
+                ctx.fillRect(50, 50, 100, 100);
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Arial';
+                ctx.fillText(`${type} Started!`, 200, 100);
+                
+                alert(`${type} game started! This is a test version.`);
+            }
+            
+            // Back to menu
+            function backToMenu() {
+                console.log('Back to menu');
+                gameArea.style.display = 'none';
+                menuArea.style.display = 'block';
+            }
+            
+            // Event listeners
+            if (quickBtn) {
+                quickBtn.addEventListener('click', () => {
+                    console.log('Quick game clicked');
+                    startGame('Quick');
+                });
+            }
+            
+            if (standardBtn) {
+                standardBtn.addEventListener('click', () => {
+                    console.log('Standard game clicked');
+                    startGame('Standard');
+                });
+            }
+            
+            if (advancedBtn) {
+                advancedBtn.addEventListener('click', () => {
+                    console.log('Advanced game clicked');
+                    startGame('Advanced');
+                });
+            }
+            
+            if (backBtn) {
+                backBtn.addEventListener('click', backToMenu);
+            }
+            
+            console.log('Test page initialized successfully');
+        });
+    </script>
+</body>
+</html>

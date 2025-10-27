@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Test</title>
+</head>
+<body>
+    <h1>Module Loading Test</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+        
+        try {
+            console.log('Testing module imports...');
+            output.innerHTML += '<p>Testing module imports...</p>';
+            
+            // Test Constants import
+            const { GAME_CONSTANTS } = await import('./src/utils/Constants.js');
+            console.log('✅ Constants loaded:', GAME_CONSTANTS);
+            output.innerHTML += '<p>✅ Constants loaded successfully</p>';
+            
+            // Test Helpers import
+            const { GameHelpers, EventEmitter } = await import('./src/utils/Helpers.js');
+            console.log('✅ Helpers loaded:', GameHelpers, EventEmitter);
+            output.innerHTML += '<p>✅ Helpers loaded successfully</p>';
+            
+            // Test Game class import
+            const { Game } = await import('./src/game/Game.js');
+            console.log('✅ Game class loaded:', Game);
+            output.innerHTML += '<p>✅ Game class loaded successfully</p>';
+            
+            // Test creating a game instance
+            const game = new Game();
+            console.log('✅ Game instance created:', game);
+            output.innerHTML += '<p>✅ Game instance created successfully</p>';
+            
+            output.innerHTML += '<p><strong>All modules loaded successfully! 🎉</strong></p>';
+            
+        } catch (error) {
+            console.error('❌ Module loading failed:', error);
+            output.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            output.innerHTML += `<p style="color: red;">Stack: ${error.stack}</p>`;
+        }
+    </script>
+</body>
+</html>

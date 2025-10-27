@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Tactics</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        /* Additional styles for menu */
+        #menu-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a1a;
+        }
+        
+        .menu-content {
+            text-align: center;
+            background: #2c3e50;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .menu-content h1 {
+            color: #3498db;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .menu-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .menu-btn:hover {
+            background: #2980b9;
+        }
+        
+        #game-container {
+            display: none;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-content h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .settings-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .settings-options label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .settings-options select {
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid #3498db;
+            background: #34495e;
+            color: white;
+        }
+        
+        .help-content {
+            line-height: 1.6;
+        }
+        
+        .help-content ul {
+            margin: 10px 0 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Container (shown by default) -->
+    <div id="menu-container">
+        <div class="menu-content">
+            <h1>Sovereign Tactics</h1>
+            <div class="menu-options">
+                <button id="start-basic-game" class="menu-btn">Quick Game</button>
+                <button id="start-standard-game" class="menu-btn">Standard Game</button>
+                <button id="start-advanced-game" class="menu-btn">Advanced Game</button>
+                <button id="load-saved-game" class="menu-btn">Load Game</button>
+                <button id="show-settings" class="menu-btn">Settings</button>
+                <button id="show-help" class="menu-btn">Help</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container (hidden by default) -->
+    <div id="game-container">
+        <header id="game-header">
+            <h1>Sovereign Tactics</h1>
+            <div id="game-info">
+                <span id="current-player">Player 1</span>
+                <span id="turn-counter">Turn 1</span>
+                <button id="end-turn-btn" class="menu-btn">End Turn</button>
+            </div>
+        </header>
+        
+        <main id="game-main">
+            <div id="game-board-container">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <div id="canvas-overlay">
+                    <!-- UI overlays will go here -->
+                </div>
+            </div>
+            
+            <aside id="game-sidebar">
+                <div id="unit-info">
+                    <h3>Unit Information</h3>
+                    <div id="selected-unit-details">
+                        <p>Select a unit to view details</p>
+                    </div>
+                </div>
+                
+                <div id="city-info">
+                    <h3>City Information</h3>
+                    <div id="selected-city-details">
+                        <p>Select a city to view details</p>
+                    </div>
+                </div>
+                
+                <div id="game-controls">
+                    <h3>Controls</h3>
+                    <button id="save-game" class="menu-btn">Save Game</button>
+                    <button id="load-game" class="menu-btn">Load Game</button>
+                    <button id="new-game" class="menu-btn">New Game</button>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Game Settings</h2>
+            <div class="settings-options">
+                <label>Map Size: <select id="map-size">
+                    <option value="small">Small (20x15)</option>
+                    <option value="medium" selected>Medium (30x20)</option>
+                    <option value="large">Large (40x30)</option>
+                </select></label>
+                
+                <label>Number of Players: <select id="num-players">
+                    <option value="2" selected>2 Players</option>
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                </select></label>
+                
+                <label>AI Difficulty: <select id="ai-difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select></label>
+            </div>
+            <div class="modal-buttons">
+                <button id="save-settings" class="menu-btn">Save</button>
+                <button id="close-settings" class="menu-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>How to Play</h2>
+            <div class="help-content">
+                <p><strong>Sovereign Tactics</strong> is a turn-based strategy game.</p>
+                <h3>Objective:</h3>
+                <p>Capture all enemy cities and eliminate opposing armies.</p>
+                <h3>Controls:</h3>
+                <ul>
+                    <li><strong>Click</strong> to select units or cities</li>
+                    <li><strong>Right-click</strong> to move selected unit</li>
+                    <li><strong>Mouse wheel</strong> to zoom in/out</li>
+                    <li><strong>Click and drag</strong> to pan the map</li>
+                </ul>
+                <h3>Units:</h3>
+                <ul>
+                    <li><strong>Infantry:</strong> Basic ground unit</li>
+                    <li><strong>Tank:</strong> Heavy armor, strong attack</li>
+                    <li><strong>Fighter:</strong> Air unit, fast movement</li>
+                    <li><strong>Ship:</strong> Naval unit for water combat</li>
+                </ul>
+            </div>
+            <button id="close-help" class="menu-btn">Close</button>
+        </div>
+    </div>
+
+    <!-- Simple JavaScript without modules for now -->
+    <script>
+        console.log('Sovereign Tactics loading...');
+        
+        // Simple app object
+        const EmpireApp = {
+            gameStarted: false,
+            
+            init() {
+                console.log('Initializing Sovereign Tactics...');
+                this.setupMenuHandlers();
+                console.log('Sovereign Tactics initialized successfully!');
+            },
+            
+            setupMenuHandlers() {
+                console.log('Setting up menu handlers...');
+                
+                // Quick game button
+                const quickBtn = document.getElementById('start-basic-game');
+                if (quickBtn) {
+                    console.log('Quick game button found');
+                    quickBtn.addEventListener('click', () => {
+                        console.log('Quick game clicked!');
+                        this.startGame('Quick Game', { mapSize: 'small', players: 2, difficulty: 'easy' });
+                    });
+                }
+                
+                // Standard game button
+                const standardBtn = document.getElementById('start-standard-game');
+                if (standardBtn) {
+                    console.log('Standard game button found');
+                    standardBtn.addEventListener('click', () => {
+                        console.log('Standard game clicked!');
+                        this.startGame('Standard Game', { mapSize: 'medium', players: 2, difficulty: 'medium' });
+                    });
+                }
+                
+                // Advanced game button
+                const advancedBtn = document.getElementById('start-advanced-game');
+                if (advancedBtn) {
+                    console.log('Advanced game button found');
+                    advancedBtn.addEventListener('click', () => {
+                        console.log('Advanced game clicked!');
+                        this.startGame('Advanced Game', { mapSize: 'large', players: 4, difficulty: 'hard' });
+                    });
+                }
+                
+                // Settings button
+                const settingsBtn = document.getElementById('show-settings');
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', () => {
+                        this.showSettings();
+                    });
+                }
+                
+                // Help button
+                const helpBtn = document.getElementById('show-help');
+                if (helpBtn) {
+                    helpBtn.addEventListener('click', () => {
+                        this.showHelp();
+                    });
+                }
+                
+                // Modal close buttons
+                const closeSettings = document.getElementById('close-settings');
+                if (closeSettings) {
+                    closeSettings.addEventListener('click', () => {
+                        document.getElementById('settings-modal').style.display = 'none';
+                    });
+                }
+                
+                const closeHelp = document.getElementById('close-help');
+                if (closeHelp) {
+                    closeHelp.addEventListener('click', () => {
+                        document.getElementById('help-modal').style.display = 'none';
+                    });
+                }
+                
+                // New game button (return to menu)
+                const newGameBtn = document.getElementById('new-game');
+                if (newGameBtn) {
+                    newGameBtn.addEventListener('click', () => {
+                        this.returnToMenu();
+                    });
+                }
+            },
+            
+            startGame(gameType, config) {
+                console.log('Starting', gameType, 'with config:', config);
+                
+                // Hide menu
+                document.getElementById('menu-container').style.display = 'none';
+                
+                // Show game
+                document.getElementById('game-container').style.display = 'block';
+                
+                // Setup canvas
+                const canvas = document.getElementById('game-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Simple game visualization
+                ctx.fillStyle = '#2c3e50';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw grid
+                ctx.strokeStyle = '#34495e';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+                
+                // Draw some sample units
+                ctx.fillStyle = '#3498db';
+                ctx.fillRect(80, 80, 30, 30);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(600, 400, 30, 30);
+                
+                // Add labels
+                ctx.fillStyle = 'white';
+                ctx.font = '16px Arial';
+                ctx.fillText(`${gameType} Started!`, 10, 30);
+                ctx.fillText(`Map: ${config.mapSize}, Players: ${config.players}, AI: ${config.difficulty}`, 10, 50);
+                
+                this.gameStarted = true;
+                
+                alert(`${gameType} started! This is a basic demonstration.\n\nClick "New Game" to return to menu.\n\nThe full game engine will be integrated next.`);
+            },
+            
+            returnToMenu() {
+                document.getElementById('game-container').style.display = 'none';
+                document.getElementById('menu-container').style.display = 'block';
+                this.gameStarted = false;
+            },
+            
+            showSettings() {
+                document.getElementById('settings-modal').style.display = 'block';
+            },
+            
+            showHelp() {
+                document.getElementById('help-modal').style.display = 'block';
+            }
+        };
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            EmpireApp.init();
+        });
+        
+        // Make available globally for debugging
+        window.EmpireApp = EmpireApp;
+    </script>
+</body>
+</html>
