@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Tactics - Screen Layout Diagram</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        .diagram-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #333;
+            position: relative;
+        }
+        
+        .screen-section {
+            border: 2px solid #e74c3c;
+            position: relative;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .label {
+            position: absolute;
+            background: #e74c3c;
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        
+        .label.top-left { top: -2px; left: -2px; }
+        .label.top-right { top: -2px; right: -2px; }
+        .label.bottom-left { bottom: -2px; left: -2px; }
+        .label.bottom-right { bottom: -2px; right: -2px; }
+        
+        /* Main Layout */
+        .game-container {
+            width: 100%;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .game-header {
+            height: 80px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        
+        .game-main {
+            flex: 1;
+            display: flex;
+        }
+        
+        .game-board-container {
+            flex: 1;
+            background: #34495e;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-canvas {
+            width: 400px;
+            height: 300px;
+            background: #2c3e50;
+            border: 2px solid #3498db;
+        }
+        
+        .game-sidebar {
+            width: 300px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .game-controls-compact {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .header-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .game-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .end-turn-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        
+        .info-panel {
+            background: #34495e;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #3498db;
+        }
+        
+        .info-panel h3 {
+            color: #3498db;
+            margin: 0 0 10px 0;
+        }
+        
+        .menu-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .menu-content {
+            background: rgba(44, 62, 80, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .menu-content h1 {
+            color: #3498db;
+            margin-bottom: 30px;
+        }
+        
+        .menu-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin: 5px;
+            display: block;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sovereign Tactics - Screen Layout Diagram</h1>
+    
+    <h2>🎮 Game Screen Layout</h2>
+    <div class="diagram-container">
+        <!-- Game Container (Outer Frame) -->
+        <div class="game-container screen-section">
+            <div class="label top-left">#game-container</div>
+            
+            <!-- Header Section -->
+            <div class="game-header screen-section">
+                <div class="label top-left">#game-header</div>
+                
+                <div class="header-left">
+                    <h1 style="margin: 0; color: #3498db;">Sovereign Tactics</h1>
+                </div>
+                
+                <div class="header-controls screen-section">
+                    <div class="label top-right">#header-controls</div>
+                    
+                    <div class="game-controls-compact screen-section">
+                        <div class="label bottom-left">.game-controls-compact</div>
+                        <button class="header-btn">Save</button>
+                        <button class="header-btn">Load</button>
+                        <button class="header-btn">Menu</button>
+                    </div>
+                    
+                    <div class="game-info screen-section">
+                        <div class="label bottom-right">#game-info</div>
+                        <span>Player 1</span>
+                        <span>Turn 1</span>
+                        <button class="end-turn-btn">End Turn</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Game Area -->
+            <div class="game-main screen-section">
+                <div class="label top-left">#game-main</div>
+                
+                <!-- Game Board Container -->
+                <div class="game-board-container screen-section">
+                    <div class="label top-left">#game-board-container</div>
+                    
+                    <!-- Game Canvas -->
+                    <div class="game-canvas screen-section">
+                        <div class="label top-left">#game-canvas</div>
+                        <div style="text-align: center; padding-top: 140px; color: white;">
+                            Game Map Renders Here
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="game-sidebar screen-section">
+                    <div class="label top-right">#game-sidebar</div>
+                    
+                    <div class="info-panel screen-section">
+                        <div class="label top-left">.info-panel</div>
+                        <h3>Selected Unit</h3>
+                        <div>No unit selected</div>
+                    </div>
+                    
+                    <div class="info-panel screen-section">
+                        <div class="label top-left">.info-panel</div>
+                        <h3>Selected City</h3>
+                        <div>No city selected</div>
+                    </div>
+                    
+                    <div class="info-panel screen-section">
+                        <div class="label top-left">.info-panel</div>
+                        <h3>Player Statistics</h3>
+                        <div>Cities: 1<br>Units: 1</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h2>📋 Menu Screen Layout</h2>
+    <div class="diagram-container">
+        <div style="height: 400px; position: relative; background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%); display: flex; justify-content: center; align-items: center;">
+            <div class="screen-section" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                <div class="label top-left">#menu-container</div>
+            </div>
+            
+            <div class="menu-content screen-section">
+                <div class="label top-left">.menu-content</div>
+                <h1>Sovereign Tactics</h1>
+                <div class="screen-section" style="padding: 10px;">
+                    <div class="label top-left">.menu-options</div>
+                    <button class="menu-btn">New Game</button>
+                    <button class="menu-btn">Load Saved Game</button>
+                    <button class="menu-btn">Game Settings</button>
+                    <button class="menu-btn">How to Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h2>🗺️ Map Size Selection Layout</h2>
+    <div class="diagram-container">
+        <div style="height: 400px; position: relative; background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%); display: flex; justify-content: center; align-items: center;">
+            <div class="screen-section" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                <div class="label top-left">#map-size-container</div>
+            </div>
+            
+            <div class="menu-content screen-section">
+                <div class="label top-left">.menu-content</div>
+                <h1>Select Map Size</h1>
+                <div class="screen-section" style="padding: 10px;">
+                    <div class="label top-left">.menu-options</div>
+                    <button class="menu-btn">Small Map (50 × 40)</button>
+                    <button class="menu-btn">Medium Map (100 × 80)</button>
+                    <button class="menu-btn">Large Map (150 × 120)</button>
+                    <button class="menu-btn" style="background: #7f8c8d;">Back to Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h2>📝 Element Reference</h2>
+    <div style="background: white; padding: 20px; border: 1px solid #ccc; margin-top: 20px;">
+        <h3>Main Containers:</h3>
+        <ul>
+            <li><strong>#game-container</strong> - Full game screen wrapper</li>
+            <li><strong>#menu-container</strong> - Main menu screen</li>
+            <li><strong>#map-size-container</strong> - Map size selection screen</li>
+        </ul>
+        
+        <h3>Game Screen Parts:</h3>
+        <ul>
+            <li><strong>#game-header</strong> - Top header bar with title and controls</li>
+            <li><strong>#game-main</strong> - Main game area (board + sidebar)</li>
+            <li><strong>#game-board-container</strong> - Game board area (left side)</li>
+            <li><strong>#game-canvas</strong> - Actual game map canvas</li>
+            <li><strong>#game-sidebar</strong> - Right sidebar with unit/city info</li>
+        </ul>
+        
+        <h3>Header Controls:</h3>
+        <ul>
+            <li><strong>#header-controls</strong> - Right side of header</li>
+            <li><strong>.game-controls-compact</strong> - Save/Load/Menu buttons</li>
+            <li><strong>#game-info</strong> - Player/Turn/End Turn area</li>
+        </ul>
+        
+        <h3>Sidebar Panels:</h3>
+        <ul>
+            <li><strong>.info-panel</strong> - Individual info boxes in sidebar</li>
+            <li><strong>#selected-unit-details</strong> - Unit information</li>
+            <li><strong>#selected-city-details</strong> - City information</li>
+        </ul>
+    </div>
+</body>
+</html>

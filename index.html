@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles/main.css">
     <style>
         /* Enhanced styles for the full game */
-        #menu-container {
+        #menu-container, #map-size-container {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -174,12 +174,16 @@
             flex: 1;
             position: relative;
             background: #34495e;
+            overflow: hidden;
         }
         
         #game-canvas {
             border: 2px solid #3498db;
             background: #2c3e50;
             cursor: crosshair;
+            width: 100%;
+            height: 100%;
+            display: block;
         }
         
         #game-sidebar {
@@ -270,12 +274,31 @@
         <div class="menu-content">
             <h1>Sovereign Tactics</h1>
             <div class="menu-options">
-                <button id="start-basic-game" class="menu-btn">Quick Demo (Small Map)</button>
-                <button id="start-standard-game" class="menu-btn">Standard Demo (Medium Map)</button>
-                <button id="start-advanced-game" class="menu-btn">Advanced Demo (Large Map)</button>
+                <button id="new-game-btn" class="menu-btn">New Game</button>
                 <button id="load-saved-game" class="menu-btn">Load Saved Game</button>
                 <button id="show-settings" class="menu-btn">Game Settings</button>
                 <button id="show-help" class="menu-btn">How to Play</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Size Selection Container -->
+    <div id="map-size-container" style="display: none;">
+        <div class="menu-content">
+            <h1>Select Map Size</h1>
+            <div class="menu-options">
+                <button id="small-map-btn" class="menu-btn map-size-btn" data-width="50" data-height="40">
+                    Small Map<br><span style="font-size: 14px; opacity: 0.8;">(50 × 40)</span>
+                </button>
+                <button id="medium-map-btn" class="menu-btn map-size-btn" data-width="100" data-height="80">
+                    Medium Map<br><span style="font-size: 14px; opacity: 0.8;">(100 × 80)</span>
+                </button>
+                <button id="large-map-btn" class="menu-btn map-size-btn" data-width="150" data-height="120">
+                    Large Map<br><span style="font-size: 14px; opacity: 0.8;">(150 × 120)</span>
+                </button>
+                <button id="back-to-menu-btn" class="menu-btn" style="background: linear-gradient(145deg, #7f8c8d, #95a5a6); margin-top: 20px;">
+                    Back to Menu
+                </button>
             </div>
         </div>
     </div>
@@ -300,7 +323,7 @@
         
         <main id="game-main">
             <div id="game-board-container">
-                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <canvas id="game-canvas"></canvas>
             </div>
             
             <aside id="game-sidebar">
@@ -485,22 +508,44 @@
         
         // Setup menu button handlers
         function setupMenuHandlers() {
-            // Quick Game
-            const quickBtn = document.getElementById('start-basic-game');
-            if (quickBtn) {
-                quickBtn.addEventListener('click', () => startNewGame('quick'));
+            // New Game button - shows map size selection
+            const newGameBtn = document.getElementById('new-game-btn');
+            if (newGameBtn) {
+                newGameBtn.addEventListener('click', showMapSizeSelection);
             }
             
-            // Standard Game
-            const standardBtn = document.getElementById('start-standard-game');
-            if (standardBtn) {
-                standardBtn.addEventListener('click', () => startNewGame('standard'));
+            // Map size selection buttons
+            const smallMapBtn = document.getElementById('small-map-btn');
+            if (smallMapBtn) {
+                smallMapBtn.addEventListener('click', () => {
+                    const width = parseInt(smallMapBtn.dataset.width);
+                    const height = parseInt(smallMapBtn.dataset.height);
+                    startNewGameWithMapSize(width, height, 'easy');
+                });
             }
             
-            // Advanced Game
-            const advancedBtn = document.getElementById('start-advanced-game');
-            if (advancedBtn) {
-                advancedBtn.addEventListener('click', () => startNewGame('advanced'));
+            const mediumMapBtn = document.getElementById('medium-map-btn');
+            if (mediumMapBtn) {
+                mediumMapBtn.addEventListener('click', () => {
+                    const width = parseInt(mediumMapBtn.dataset.width);
+                    const height = parseInt(mediumMapBtn.dataset.height);
+                    startNewGameWithMapSize(width, height, 'medium');
+                });
+            }
+            
+            const largeMapBtn = document.getElementById('large-map-btn');
+            if (largeMapBtn) {
+                largeMapBtn.addEventListener('click', () => {
+                    const width = parseInt(largeMapBtn.dataset.width);
+                    const height = parseInt(largeMapBtn.dataset.height);
+                    startNewGameWithMapSize(width, height, 'hard');
+                });
+            }
+            
+            // Back to menu button
+            const backToMenuBtn = document.getElementById('back-to-menu-btn');
+            if (backToMenuBtn) {
+                backToMenuBtn.addEventListener('click', showMainMenu);
             }
             
             // Settings
@@ -551,6 +596,65 @@
             const loadBtn = document.getElementById('load-game');
             if (loadBtn) {
                 loadBtn.addEventListener('click', loadGame);
+            }
+        }
+        
+        // Show map size selection screen
+        function showMapSizeSelection() {
+            document.getElementById('menu-container').style.display = 'none';
+            document.getElementById('map-size-container').style.display = 'flex';
+        }
+        
+        // Show main menu screen
+        function showMainMenu() {
+            document.getElementById('map-size-container').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('menu-container').style.display = 'flex';
+        }
+        
+        // Start a new game with specific map size
+        function startNewGameWithMapSize(mapWidth, mapHeight, difficulty) {
+            console.log(`🎲 Starting new game with ${mapWidth}x${mapHeight} map, difficulty: ${difficulty}`);
+            
+            // Hide map size selection
+            document.getElementById('map-size-container').style.display = 'none';
+            
+            // Start the game with custom parameters
+            startGameWithConfig({
+                mapWidth: mapWidth,
+                mapHeight: mapHeight,
+                numPlayers: 2,
+                difficulty: difficulty
+            });
+        }
+        
+        // Start game with provided configuration
+        async function startGameWithConfig(config) {
+            console.log(`🎲 Starting game with config:`, config);
+            
+            try {
+                const { Game, GameBoard, HUD, GAME_CONSTANTS } = window.GameEngine;
+                
+                // Create game instance
+                currentGame = new Game();
+                currentGame.initializeGame(config);
+                
+                // Setup UI
+                const canvas = document.getElementById('game-canvas');
+                gameBoard = new GameBoard(canvas, currentGame);
+                gameHUD = new HUD(currentGame);
+                
+                // Show game UI
+                document.getElementById('game-container').style.display = 'block';
+                
+                // Focus on canvas for keyboard input
+                canvas.focus();
+                
+                console.log('✅ Game started successfully!');
+                
+            } catch (error) {
+                console.error('❌ Failed to start game:', error);
+                alert('Failed to start game: ' + error.message);
             }
         }
         
@@ -648,13 +752,14 @@
         // Return to main menu
         function returnToMenu() {
             console.log('🏠 Returning to menu...');
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('menu-container').style.display = 'flex';
             
             // Clean up game resources
             currentGame = null;
             gameBoard = null;
             gameHUD = null;
+            
+            // Show main menu
+            showMainMenu();
         }
         
         // Show settings modal

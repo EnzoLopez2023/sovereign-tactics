@@ -61,8 +61,8 @@ export class Game extends EventEmitter {
         // Apply settings
         Object.assign(this.settings, gameSettings);
         
-        // Create map
-        this.map = new GameMap();
+        // Create map with specified dimensions
+        this.map = new GameMap(gameSettings.mapWidth, gameSettings.mapHeight);
         
         // Initialize players
         this.initializePlayers(gameSettings.players || []);
@@ -747,7 +747,7 @@ export class Game extends EventEmitter {
         this.camera = gameData.camera;
         
         // Restore map
-        this.map = new GameMap();
+        this.map = new GameMap(gameData.map.width, gameData.map.height);
         this.map.import(gameData.map);
         
         // Restore players

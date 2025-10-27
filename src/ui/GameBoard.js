@@ -28,6 +28,9 @@ export class GameBoard {
         this.setupEventListeners();
         this.setupGameEventListeners();
         
+        // Setup canvas resizing
+        this.setupResizing();
+        
         // Start render loop
         this.startRenderLoop();
     }
@@ -355,15 +358,100 @@ export class GameBoard {
         this.ctx.lineWidth = isOwned ? 2 : 1;
         this.ctx.strokeRect(screenPos.x + offset, screenPos.y + offset, citySize, citySize);
         
-        // Production indicator
-        if (city.currentProduction) {
-            this.ctx.fillStyle = '#00FF00';
-            this.ctx.beginPath();
-            this.ctx.arc(screenPos.x + tileSize - tileSize * 0.12, 
-                        screenPos.y + tileSize * 0.12, 
-                        tileSize * 0.04, 0, 2 * Math.PI);
-            this.ctx.fill();
+        // Production indicator - show what unit is being produced
+        if (city.currentProduction && isOwned) {
+            this.renderProductionIndicator(city, screenPos, tileSize);
         }
+    }
+    
+    renderProductionIndicator(city, screenPos, tileSize) {
+        this.ctx.save();
+        
+        // Reset context state for clean rendering
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.setLineDash([]);
+        
+        // Position in bottom right corner of city
+        const indicatorSize = tileSize * 0.3;
+        const indicatorX = screenPos.x + tileSize - indicatorSize;
+        const indicatorY = screenPos.y + tileSize - indicatorSize;
+        
+        // Background circle for the indicator
+        this.ctx.fillStyle = '#333333'; // Dark background
+        this.ctx.strokeStyle = '#FFFFFF'; // White border
+        this.ctx.lineWidth = 2;
+        
+        this.ctx.beginPath();
+        this.ctx.arc(indicatorX + indicatorSize/2, indicatorY + indicatorSize/2, 
+                    indicatorSize/2, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        // Get unit letter for the production type
+        let unitLetter = '';
+        switch (city.currentProduction) {
+            case GAME_CONSTANTS.UNIT_TYPES.ARMY:
+                unitLetter = 'A';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.TANK:
+                unitLetter = 'T';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.FIGHTER:
+                unitLetter = 'F';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.DESTROYER:
+                unitLetter = 'D';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.CRUISER:
+                unitLetter = 'R';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.BATTLESHIP:
+                unitLetter = 'B';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.CARRIER:
+                unitLetter = 'C';
+                break;
+            case GAME_CONSTANTS.UNIT_TYPES.SUBMARINE:
+                unitLetter = 'S';
+                break;
+            default:
+                unitLetter = '?';
+        }
+        
+        // Draw the unit letter
+        this.ctx.fillStyle = '#FFFFFF'; // White text
+        this.ctx.font = `bold ${Math.max(8, indicatorSize * 0.5)}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        // Black outline for better visibility
+        this.ctx.strokeStyle = '#000000';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeText(unitLetter, indicatorX + indicatorSize/2, indicatorY + indicatorSize/2);
+        
+        // White letter on top
+        this.ctx.fillText(unitLetter, indicatorX + indicatorSize/2, indicatorY + indicatorSize/2);
+        
+        // Production progress indicator (optional - shows how many turns remaining)
+        if (city.productionTurnsRemaining && city.currentProduction) {
+            const totalTurns = GAME_CONSTANTS.PRODUCTION_COSTS[city.currentProduction];
+            const progress = 1 - (city.productionTurnsRemaining / totalTurns);
+            
+            // Progress arc around the indicator
+            this.ctx.strokeStyle = '#00FF00'; // Green progress
+            this.ctx.lineWidth = 3;
+            this.ctx.lineCap = 'round';
+            
+            this.ctx.beginPath();
+            // Start from top (-π/2) and draw clockwise
+            const startAngle = -Math.PI / 2;
+            const endAngle = startAngle + (progress * 2 * Math.PI);
+            this.ctx.arc(indicatorX + indicatorSize/2, indicatorY + indicatorSize/2, 
+                        indicatorSize/2 + 4, startAngle, endAngle);
+            this.ctx.stroke();
+        }
+        
+        this.ctx.restore();
     }
     
     renderUnits(visibleArea) {
@@ -386,9 +474,12 @@ export class GameBoard {
             return;
         }
         
-        // Unit color - no more global alpha/shadow effects
+        // Unit color - make more prominent
         let unitColor = GAME_CONSTANTS.PLAYER_COLORS[unit.owner];
-        this.ctx.fillStyle = unitColor;        const unitSize = tileSize * 0.6;
+        this.ctx.fillStyle = unitColor;
+        
+        // Make units larger and more prominent
+        const unitSize = tileSize * 0.8; // Increased from 0.6
         const centerX = screenPos.x + tileSize / 2;
         const centerY = screenPos.y + tileSize / 2;
         
@@ -421,9 +512,9 @@ export class GameBoard {
                 break;
         }
         
-        // Add unit type letter
+        // Add unit type letter - make more prominent
         this.ctx.fillStyle = '#FFFFFF'; // White text
-        this.ctx.font = `bold ${Math.max(10, unitSize * 0.5)}px Arial`;
+        this.ctx.font = `bold ${Math.max(12, unitSize * 0.6)}px Arial`; // Larger font
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         
@@ -459,7 +550,7 @@ export class GameBoard {
         
         // Draw black outline for better visibility
         this.ctx.strokeStyle = '#000000';
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = 3; // Thicker outline for prominence
         this.ctx.strokeText(unitLetter, centerX, centerY);
         
         // Draw white letter on top
@@ -513,10 +604,46 @@ export class GameBoard {
             this.ctx.restore();
             return;
         } else {
-            // Normal border
+            // Normal border - make more prominent
             this.ctx.strokeStyle = '#000000';
-            this.ctx.lineWidth = 2;
+            this.ctx.lineWidth = 3; // Increased from 2 for better visibility
         }
+        this.ctx.stroke();
+        
+        this.ctx.restore();
+        
+        // Add path indicator if unit is on a path (render after all other effects)
+        if (unit.hasMovementPath && unit.hasMovementPath()) {
+            this.renderPathIndicator(centerX, centerY, unitSize, tileSize);
+        }
+    }
+    
+    renderPathIndicator(centerX, centerY, unitSize, tileSize) {
+        this.ctx.save();
+        
+        // Reset all context properties to ensure clean state
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.setLineDash([]);
+        
+        // Position indicator in upper left corner of the tile
+        const indicatorSize = tileSize * 0.25; // Quarter of tile size
+        const indicatorX = centerX - unitSize/2 - indicatorSize/2;
+        const indicatorY = centerY - unitSize/2 - indicatorSize/2;
+        
+        // Draw small light blue triangle pointing right (indicating movement direction)
+        this.ctx.fillStyle = '#87CEEB'; // Light blue to match path
+        this.ctx.strokeStyle = '#FFFFFF'; // White outline for visibility
+        this.ctx.lineWidth = 1;
+        
+        this.ctx.beginPath();
+        // Triangle pointing right
+        this.ctx.moveTo(indicatorX, indicatorY);
+        this.ctx.lineTo(indicatorX + indicatorSize, indicatorY + indicatorSize/2);
+        this.ctx.lineTo(indicatorX, indicatorY + indicatorSize);
+        this.ctx.closePath();
+        
+        this.ctx.fill();
         this.ctx.stroke();
         
         this.ctx.restore();
@@ -536,11 +663,11 @@ export class GameBoard {
 
         this.ctx.save();
         
-        // Thin, subtle continuous line style
-        this.ctx.strokeStyle = unit.owner === this.game.getCurrentPlayer().id ? '#FFD700' : '#888888';
-        this.ctx.lineWidth = 1; // Much thinner line
-        this.ctx.setLineDash([]); // Solid line instead of dashed
-        this.ctx.globalAlpha = 0.4; // Subtle transparency
+        // Light blue path line style
+        this.ctx.strokeStyle = '#87CEEB'; // Light blue (SkyBlue)
+        this.ctx.lineWidth = 2; // Slightly thicker for visibility
+        this.ctx.setLineDash([]); // Solid line
+        this.ctx.globalAlpha = 0.7; // Good visibility
         
         // Draw continuous path from current position through all waypoints
         this.ctx.beginPath();
@@ -570,9 +697,9 @@ export class GameBoard {
             const destCenterX = destPos.x + tileSize / 2;
             const destCenterY = destPos.y + tileSize / 2;
             
-            // Small subtle destination marker
-            this.ctx.fillStyle = unit.owner === this.game.getCurrentPlayer().id ? '#FFD700' : '#888888';
-            this.ctx.globalAlpha = 0.6;
+            // Light blue destination marker
+            this.ctx.fillStyle = '#87CEEB'; // Match path color
+            this.ctx.globalAlpha = 0.8;
             this.ctx.beginPath();
             this.ctx.arc(destCenterX, destCenterY, 2, 0, Math.PI * 2); // Smaller circle
             this.ctx.fill();
@@ -636,14 +763,26 @@ export class GameBoard {
         };
     }
     
+    // Check if position is valid for the current game map
+    isValidPosition(x, y) {
+        if (!this.game || !this.game.map) {
+            return false;
+        }
+        return x >= 0 && x < this.game.map.width && 
+               y >= 0 && y < this.game.map.height;
+    }
+    
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        this.mouseX = e.clientX - rect.left;
-        this.mouseY = e.clientY - rect.top;
+        // Account for device pixel ratio in mouse coordinates
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        this.mouseX = (e.clientX - rect.left) * scaleX / (window.devicePixelRatio || 1);
+        this.mouseY = (e.clientY - rect.top) * scaleY / (window.devicePixelRatio || 1);
         
         // Update hovered tile
         const worldPos = this.screenToWorld(this.mouseX, this.mouseY);
-        if (GameHelpers.isValidPosition(worldPos.x, worldPos.y)) {
+        if (this.isValidPosition(worldPos.x, worldPos.y)) {
             this.hoveredTile = worldPos;
         } else {
             this.hoveredTile = null;
@@ -682,7 +821,7 @@ export class GameBoard {
         
         const worldPos = this.screenToWorld(this.mouseX, this.mouseY);
         console.log(`🖱️ World position: (${worldPos.x}, ${worldPos.y})`);
-        if (!GameHelpers.isValidPosition(worldPos.x, worldPos.y)) {
+        if (!this.isValidPosition(worldPos.x, worldPos.y)) {
             console.log(`🖱️ Invalid position, ignoring click`);
             return;
         }
@@ -797,7 +936,7 @@ export class GameBoard {
         e.preventDefault(); // Prevent context menu
         
         const worldPos = this.screenToWorld(this.mouseX, this.mouseY);
-        if (!GameHelpers.isValidPosition(worldPos.x, worldPos.y)) {
+        if (!this.isValidPosition(worldPos.x, worldPos.y)) {
             return;
         }
         
@@ -848,8 +987,77 @@ export class GameBoard {
         this.camera.y = -(y * this.tileSize * this.camera.zoom) + this.canvas.height / 2;
     }
     
+    setupResizing() {
+        // Track last resize to prevent infinite loops
+        this.lastWidth = 0;
+        this.lastHeight = 0;
+        this.resizeTimeout = null;
+        
+        // Initial resize with a slight delay to ensure proper layout
+        setTimeout(() => {
+            this.resize();
+            // Force a second resize to ensure quality is correct
+            setTimeout(() => {
+                this.resize();
+            }, 100);
+        }, 50);
+        
+        // Listen for window resize with debouncing
+        window.addEventListener('resize', () => {
+            if (this.resizeTimeout) {
+                clearTimeout(this.resizeTimeout);
+            }
+            this.resizeTimeout = setTimeout(() => {
+                this.resize();
+            }, 16); // ~60fps
+        });
+    }
+    
     resize() {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+        // Get the display size (CSS pixels)
+        const displayWidth = this.canvas.clientWidth;
+        const displayHeight = this.canvas.clientHeight;
+        
+        // Don't resize if dimensions are 0 (hidden canvas)
+        if (displayWidth === 0 || displayHeight === 0) {
+            return;
+        }
+        
+        // Prevent infinite resize loops by checking if size actually changed
+        if (displayWidth === this.lastWidth && displayHeight === this.lastHeight) {
+            return;
+        }
+        
+        // Get device pixel ratio for crisp rendering on high-DPI displays
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        
+        // Set the canvas resolution (internal size)
+        this.canvas.width = Math.floor(displayWidth * devicePixelRatio);
+        this.canvas.height = Math.floor(displayHeight * devicePixelRatio);
+        
+        // Scale the canvas back down using CSS
+        this.canvas.style.width = displayWidth + 'px';
+        this.canvas.style.height = displayHeight + 'px';
+        
+        // Reset transform and scale the drawing context to match device pixel ratio
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(devicePixelRatio, devicePixelRatio);
+        
+        // Set anti-aliasing properties for crisp pixel art
+        this.ctx.imageSmoothingEnabled = false;
+        this.ctx.webkitImageSmoothingEnabled = false;
+        this.ctx.mozImageSmoothingEnabled = false;
+        this.ctx.msImageSmoothingEnabled = false;
+        
+        // Store last dimensions
+        this.lastWidth = displayWidth;
+        this.lastHeight = displayHeight;
+        
+        console.log(`Canvas resized: Display=${displayWidth}x${displayHeight}, Internal=${this.canvas.width}x${this.canvas.height}, DPR=${devicePixelRatio}`);
+        
+        // Trigger a redraw after resize
+        if (this.game && this.game.gameState === 'playing') {
+            this.draw();
+        }
     }
 }
